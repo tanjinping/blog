@@ -2,6 +2,14 @@ const handleBlogRouter = require('./src/router/blog');
 const handleUserRouter = require('./src/router/user');
 const querystring = require('querystring');
 
+//用于处理 post Data
+const getPostData = (req) => {
+    const promise = new Promise((resolve, reject) => {
+
+    });
+    return promise;
+};
+
 const serverHandle = (req, res) => {
     //设置返回格式
     res.setHeader('Content-type', 'application/json');
