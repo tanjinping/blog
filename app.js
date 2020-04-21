@@ -22,7 +22,7 @@ const getPostData = (req) => {
                 resolve({});
                 return;
             }
-            resolve(postData);
+            resolve(JSON.parse(postData));
         })
     });
     return promise;

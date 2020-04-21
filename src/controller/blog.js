@@ -52,10 +52,13 @@ const newBlog = (blogData = {}) => {
 const updateBlog = (id, blogData = {}) => {
     //id 更新博客ID
     //blogData 是一个博客对象，包含title content属性
-    console.log(id, blogData);
     return false;
 };
 
+const deleteBlog = (id) => {
+    return true;
+};
+
 module.exports = {
-    getList, getDetail, newBlog, updateBlog
+    getList, getDetail, newBlog, updateBlog,deleteBlog
 };
