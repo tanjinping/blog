@@ -15,30 +15,37 @@ const getList = (author, keyword) => {
 };
 
 const getDetail = (id) => {
-    return {
-        id: 1,
-        title: '标题1',
-        createTime: 1586599211553,
-        content: "内容1",
-        author: "张三"
-    }
+    const sql = `select * from blogs where id='${id}'`;
+    return exec(sql).then(rows => {
+        return rows[0];
+    })
 };
 
 const newBlog = (blogData = {}) => {
-    //blogData 是一个博客对象，包含title content属性
-    return {
-        id: 3 //新建博客插入到数据表 id
-    }
+    const {title, content, author} = blogData;
+    const createTime = Date.now();
+    const sql = `insert into blogs (title,content,createtime,author) values ('${title}','${content}',${createTime},'${author}')`;
+
+    return exec(sql).then(insertDate => {
+        return {
+            id: insertDate.insertId
+        }
+    });
 };
 
 const updateBlog = (id, blogData = {}) => {
-    //id 更新博客ID
-    //blogData 是一个博客对象，包含title content属性
-    return false;
+    const {title, content} = blogData;
+    const sql = `update blogs set title='${title}',content='${content}' where id=${id}`;
+    return exec(sql).then(updateDate => {
+        return updateDate.affectedRows > 0;
+    })
 };
 
-const deleteBlog = (id) => {
-    return true;
+const deleteBlog = (id, author) => {
+    const sql = `delete from blogs where id=${id} and author='${author}'`;
+    return exec(sql).then(deleteData => {
+        return deleteData.affectedRows > 0;
+    })
 };
 
 module.exports = {
