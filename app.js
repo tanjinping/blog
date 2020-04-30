@@ -1,6 +1,15 @@
 const handleBlogRouter = require('./src/router/blog');
 const handleUserRouter = require('./src/router/user');
 const querystring = require('querystring');
+const {get, set} = require('./src/db/redis');
+
+//获取cookie的过期时间
+const getCookieExpires = () => {
+    const d = new Date();
+    d.setTime(d.getTime() + 60 * 1000);
+    console.log(d.toGMTString());
+    return d.toGMTString();
+};
 
 //用于处理 post Data
 const getPostData = (req) => {
@@ -51,14 +60,36 @@ const serverHandle = (req, res) => {
         req.cookie[key] = arr[1].trim();
     });
 
-    //处理postData
-    getPostData(req).then(postData => {
+    //解析session
+    let needSetCookie = false;
+    let {userId} = req.cookie;
+    if (!userId) {
+        needSetCookie = true;
+        userId = `${Date.now()}_${Math.random()}`;
+        set(userId, {});
+        // if (!SESSION_DATA[userId]) {
+        //     SESSION_DATA[userId] = {};
+        // }
+    }
+    //获取session
+    req.sessionId = userId;
+    get(userId).then(sessionDate => {
+        if (!sessionDate) {
+            set(userId, {});
+            req.session = {};
+        } else {
+            req.session = sessionDate;
+        }
+        return getPostData(req);
+    }).then(postData => {
         req.body = postData;
 
         //处理blog路由
         const blogResult = handleBlogRouter(req, res);
         if (blogResult) {
             blogResult.then(blogData => {
+                //操作cookie
+                needSetCookie && res.setHeader('Set-Cookie', `username=${userId}; path=/;httpOnly;expires=${getCookieExpires()}`);
                 res.end(JSON.stringify(blogData));
             });
             return;
@@ -68,6 +99,8 @@ const serverHandle = (req, res) => {
         const userResult = handleUserRouter(req, res);
         if (userResult) {
             userResult.then(userData => {
+                //操作cookie
+                needSetCookie && res.setHeader('Set-Cookie', `username=${userId}; path=/;httpOnly;expires=${getCookieExpires()}`);
                 res.end(
                     JSON.stringify(userData)
                 );
