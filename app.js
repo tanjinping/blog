@@ -1,6 +1,7 @@
 const handleBlogRouter = require('./src/router/blog');
 const handleUserRouter = require('./src/router/user');
 const querystring = require('querystring');
+const {access} = require('./src/utils/log');
 const {get, set} = require('./src/db/redis');
 
 //获取cookie的过期时间
@@ -38,6 +39,9 @@ const getPostData = (req) => {
 };
 
 const serverHandle = (req, res) => {
+    //记录access log
+    access(`${req.method} -- ${req.url} -- ${req.headers['user-agent']} -- ${Date.now()}`);
+
     //设置返回格式
     res.setHeader('Content-type', 'application/json');
 
@@ -89,7 +93,7 @@ const serverHandle = (req, res) => {
         if (blogResult) {
             blogResult.then(blogData => {
                 //操作cookie
-                needSetCookie && res.setHeader('Set-Cookie', `username=${userId}; path=/;httpOnly;expires=${getCookieExpires()}`);
+                needSetCookie && res.setHeader('Set-Cookie', `userId=${userId}; path=/;httpOnly;expires=${getCookieExpires()}`);
                 res.end(JSON.stringify(blogData));
             });
             return;
@@ -100,7 +104,7 @@ const serverHandle = (req, res) => {
         if (userResult) {
             userResult.then(userData => {
                 //操作cookie
-                needSetCookie && res.setHeader('Set-Cookie', `username=${userId}; path=/;httpOnly;expires=${getCookieExpires()}`);
+                needSetCookie && res.setHeader('Set-Cookie', `userId=${userId}; path=/;httpOnly;expires=${getCookieExpires()}`);
                 res.end(
                     JSON.stringify(userData)
                 );
